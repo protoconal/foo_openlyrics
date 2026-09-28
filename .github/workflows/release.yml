@@ -54,7 +54,7 @@ jobs:
         run: msbuild /r /m /p:Configuration=Release /p:Platform=x64 build\foo_openlyrics.sln
 
       - name: Download ARM64 release artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v4.1.3
         with:
           name: foo_openlyrics-arm64-release
           path: build/ARM64/Release
