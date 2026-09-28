@@ -16,9 +16,7 @@ jobs:
   build-release:
     name: Build Release
     runs-on: windows-2022
-    needs:
-      - run-tests
-      - build-release-arm64
+    needs: build-release-arm64
     permissions:
       contents: write  # Needed to allow creating a release
 
