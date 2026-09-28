@@ -68,3 +68,27 @@ jobs:
 
       - name: Build release binaries
         run: msbuild /r /m /p:Configuration=Release /p:Platform=x64 build\foo_openlyrics.sln
+
+  build-and-test-arm64:
+    name: Build & test - ARM64
+    runs-on: windows-11-arm
+    permissions: {}
+    steps:
+      - name: Add MSBuild to the PATH
+        uses: microsoft/setup-msbuild@v3
+
+      - name: Checkout code
+        uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0  # Fetch all the history so that `git describe` works to generate the version header
+          fetch-tags: true
+
+      - name: Build debug binaries
+        run: msbuild /r /m /p:Configuration=Debug /p:Platform=ARM64 build\foo_openlyrics.sln
+
+      - name: Run tests
+        run: build\ARM64\Debug\test_foo_openlyrics.exe build\ARM64\Debug\foo_openlyrics.dll
+
+      - name: Build release binaries
+        run: msbuild /r /m /p:Configuration=Release /p:Platform=ARM64 build\foo_openlyrics.sln
