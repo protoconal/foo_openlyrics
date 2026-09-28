@@ -16,7 +16,9 @@ jobs:
   build-release:
     name: Build Release
     runs-on: windows-2022
-    needs: run-tests
+    needs:
+      - run-tests
+      - build-release-arm64
     permissions:
       contents: write  # Needed to allow creating a release
 
@@ -51,8 +53,11 @@ jobs:
       - name: Build 64-bit binary
         run: msbuild /r /m /p:Configuration=Release /p:Platform=x64 build\foo_openlyrics.sln
 
-      - name: Build ARM64 binary
-        run: msbuild /r /m /p:Configuration=Release /p:Platform=ARM64 build\foo_openlyrics.sln
+      - name: Download ARM64 release artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: foo_openlyrics-arm64-release
+          path: build/ARM64/Release
 
       - name: Pack binary into archive
         shell: bash
@@ -91,3 +96,31 @@ jobs:
             $env:RELEASE_NAME-with_debug_symbols.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  build-release-arm64:
+    name: Build Release ARM64
+    runs-on: windows-11-arm
+    needs: run-tests
+    permissions: {}
+
+    steps:
+      - name: Add MSBuild to the PATH
+        uses: microsoft/setup-msbuild@30375c66a4eea26614e0d39710365f22f8b0af57  # v3
+
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+        with:
+          persist-credentials: false
+          fetch-depth: 0  # Fetch all the history so that `git describe` works to generate the version header
+          fetch-tags: true
+
+      - name: Build ARM64 binary
+        run: msbuild /r /m /p:Configuration=Release /p:Platform=ARM64 build\foo_openlyrics.sln
+
+      - name: Upload ARM64 release artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: foo_openlyrics-arm64-release
+          path: |
+            build/ARM64/Release/foo_openlyrics.dll
+            build/ARM64/Release/foo_openlyrics.pdb
